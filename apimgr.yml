@@ -38,7 +38,7 @@ CONTAINER:
     # Container image version detail
     # ------------------------------------------------------
     # Image Name
-    IMAGE_NAME: cp.stg.icr.io/cp/scalesystem/sss_api
+    IMAGE_NAME: cp.icr.io/cp/scalesystem/sss_api
 
     # Image Version
     IMAGE_VERSION: 6.2.3.2
