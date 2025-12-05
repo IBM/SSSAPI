@@ -54,7 +54,7 @@ STATIC_apimgr_YML = {
     'CAMPUS_INTERFACE': 'campus',
     'RAS_INTERFACE': 'virbr1',
     'RAS_INTERFACE_IP': '10.23.16.1',
-    'IMAGE_NAME': 'cp.stg.icr.io/cp/scalesystem/sss_api',
+    'IMAGE_NAME': 'cp.icr.io/cp/scalesystem/sss_api',
     'SSH_PORT': '20022',
     'API_PORT': '46443',
 
