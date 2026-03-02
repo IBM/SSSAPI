@@ -41,7 +41,7 @@ CONTAINER:
     IMAGE_NAME: cp.icr.io/cp/scalesystem/sss_api
 
     # Image Version
-    IMAGE_VERSION: 6.2.3.3
+    IMAGE_VERSION: 6.2.3.4
 
     # ----------------------------------
     # log and backup location. These are the location on the container hosting node.
