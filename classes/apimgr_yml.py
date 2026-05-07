@@ -72,7 +72,7 @@ CONFIG_apimgr_YML: dict[str, str] = {
 }
 
 SUPPORTED_VERSIONS: set[str] = {
-    "7.0.1.0"
+    "7.0.1.0",
     "7.0.0.0",
     "6.2.3.2",
     "6.2.3.1",
@@ -520,6 +520,10 @@ class apimgr_yml(object):
             while True:
                 self.run_log.debug(
                     "Going to ask the user for a Image Version"
+                )
+                print(
+                    f"\nSupported versions are: "
+                    f"{', '.join(sorted(SUPPORTED_VERSIONS))}"
                 )
                 IMAGE_VERSION_user: str = input(
                     "Enter the image version (default: " + DEFAULT_VERSION + "): "
