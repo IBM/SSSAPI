@@ -271,8 +271,8 @@ def run_container(force, is_startapicont=False):
             print("-- Exiting... --")
             sys.exit(rc)
 
+        credentials_file = "credentials.properties"
         if tuple(map(int, IMAGE_VERSION.split(sep="."))) >= (7, 0, 0, 0):
-            credentials_file = "credentials.properties"
             cmd = "podman cp " + credentials_file + " " + cfg["CONTAINER"]["CONTAINER_HOSTNAME"] + ":/var/lib/ess/" + credentials_file
 
             rc = subprocess.call(cmd, shell=True)
@@ -281,12 +281,12 @@ def run_container(force, is_startapicont=False):
                 print("-- Exiting... --")
                 sys.exit(rc)
 
-            file_path = os.path.join(os.getcwd(), credentials_file)
-            if os.path.exists(file_path):
-                os.remove(file_path)
-                print(f"-- [WARNING] The {file_path} file was deleted.")
-            else:
-                print(f"-- [INFO] {file_path} does not exist.")
+        file_path = os.path.join(os.getcwd(), credentials_file)
+        if os.path.exists(file_path):
+            os.remove(file_path)
+            print(f"-- [WARNING] The {file_path} file was deleted.")
+        else:
+            print(f"-- [INFO] {file_path} does not exist. Ingoring...")
 
         print("-- [INFO] The API server container is being configured to start as a systemd service. --")
         print("-- [INFO] The API server container is set to autostart. --")
