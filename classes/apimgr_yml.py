@@ -292,7 +292,8 @@ class apimgr_yml(object):
             "We use UTILITY hostname to derivate names for Management. Safe option."
         )
         self.UTILITY_HOSTNAME = self.__get_UTILITY_HOSTNAME()
-        self.DNS_domain = self.__get_sys_domain()
+        # self.DNS_domain = self.__get_sys_domain()
+        self.DNS_domain = self.container['CONTAINER_DOMAIN_NAME']
 
         # Lets copy apimgr into classes dir
         self.__copy_apimgr_into_classes()
