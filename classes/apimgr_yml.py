@@ -49,7 +49,7 @@ RAS_NETBLOCK = "10.23.16.0/29"
 # RAS bridge IP
 RAS_IP = "10.23.16.1"
 
-STATIC_apimgr_YML = {
+STATIC_apimgr_YML: dict[str, str] = {
     'CONTAINER_HOSTNAME': 'utilityBareMetal-api-official',
     'RAS_INTERFACE': 'virbr1',
     'RAS_INTERFACE_IP': '10.23.16.1',
@@ -61,7 +61,7 @@ STATIC_apimgr_YML = {
     'BUILDS': '/serv',
 }
 
-CONFIG_apimgr_YML = {
+CONFIG_apimgr_YML: dict[str, str] = {
     'CONTAINER_DOMAIN_NAME': 'gpfs.local',
     'UTILITY_HOSTNAME': 'utilityBareMetal',
     'CAMPUS_INTERFACE': 'campus',
@@ -71,6 +71,15 @@ CONFIG_apimgr_YML = {
     'API_PORT': '46443'
 }
 
+SUPPORTED_VERSIONS: set[str] = {
+    # 7.0.x.x
+    "7.0.1.0", "7.0.0.0",
+
+    # 6.2.3.x LTS
+    "6.2.3.5", "6.2.3.4", "6.2.3.3", "6.2.3.2", "6.2.3.1", "6.2.3.0",
+}
+
+DEFAULT_VERSION = "7.0.1.0"
 
 class apimgr_yml(object):
     """
@@ -283,7 +292,8 @@ class apimgr_yml(object):
             "We use UTILITY hostname to derivate names for Management. Safe option."
         )
         self.UTILITY_HOSTNAME = self.__get_UTILITY_HOSTNAME()
-        self.DNS_domain = self.__get_sys_domain()
+        # self.DNS_domain = self.__get_sys_domain()
+        self.DNS_domain = self.container['CONTAINER_DOMAIN_NAME']
 
         # Lets copy apimgr into classes dir
         self.__copy_apimgr_into_classes()
@@ -512,21 +522,23 @@ class apimgr_yml(object):
                 self.run_log.debug(
                     "Going to ask the user for a Image Version"
                 )
-                IMAGE_VERSION_user = input(
-                    "Enter the image version (default: 7.0.0.2): "
+                print(
+                    f"\nSupported versions are: "
+                    f"{', '.join(sorted(SUPPORTED_VERSIONS))}"
+                )
+                IMAGE_VERSION_user: str = input(
+                    "Enter the image version (default: " + DEFAULT_VERSION + "): "
                 )
                 if IMAGE_VERSION_user == "":
-                    IMAGE_VERSION_user = "7.0.0.2"
+                    IMAGE_VERSION_user = DEFAULT_VERSION
                     break
-                elif IMAGE_VERSION_user == "6.2.3.0" or \
-                        IMAGE_VERSION_user == "6.2.3.1" or \
-                        IMAGE_VERSION_user == "6.2.3.2" or \
-                        IMAGE_VERSION_user == "7.0.0.0" or \
-                        IMAGE_VERSION_user == "7.0.0.1" or \
-                        IMAGE_VERSION_user == "7.0.0.2" :
+                elif IMAGE_VERSION_user in SUPPORTED_VERSIONS:
                     break
                 else:
-                    print("Image name should be 6.2.3.0 or 6.2.3.1 or 6.2.3.2 or 7.0.0.0 or 7.0.0.1 or 7.0.0.2\n")
+                    print(
+                        f"Supported versions are: "
+                        f"{', '.join(sorted(SUPPORTED_VERSIONS))}\n"
+                    )
             return IMAGE_VERSION_user
         except KeyboardInterrupt:
             print("")
