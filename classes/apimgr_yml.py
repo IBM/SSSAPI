@@ -169,16 +169,10 @@ class apimgr_yml(object):
 
         self.cfg_loaded, self.cfg = self.__load_yml_file()
         if self.cfg_loaded:
-            self.run_log.debug(
-                "The YML file was loaded"
-            )
+            self.run_log.debug("The YML file was loaded")
         else:
-            self.run_log.error(
-                "There was an issue loading the apimgr.yml file"
-            )
-            self.run_log.debug(
-                "Going to terminate with RC 1"
-            )
+            self.run_log.error("There was an issue loading the apimgr.yml file")
+            self.run_log.debug("Going to terminate with RC 1")
             sys.exit(1)
         self.container = self.cfg['CONTAINER']
         self.static_NOK = self.__check_static_vars()
@@ -247,23 +241,15 @@ class apimgr_yml(object):
 
         # Lets deal with utilityBareMetal passwords if applicable
         if self.UTILITYBAREMETAL_PASSWORD is not None and self.UTILITYBAREMETAL_PASSWORD != "":
-            self.run_log.debug(
-                "We got utilityBareMetal password from command line"
-            )
+            self.run_log.debug("We got utilityBareMetal password from command line")
         else:
-            self.run_log.debug(
-                "We do not have utilityBareMetal password from command line. reading it now"
-            )
+            self.run_log.debug("We do not have utilityBareMetal password from command line. reading it now")
             self.UTILITYBAREMETAL_PASSWORD = self.__ask_UTILITYBAREMETAL_PASSWORD()
 
         if self.IS_EMSVM_23E_EXIST is not None and self.IS_EMSVM_23E_EXIST != "":
-            self.run_log.debug(
-                "We got is EMSVM-23E exist from command line"
-            )
+            self.run_log.debug("We got is EMSVM-23E exist from command line")
         else:
-            self.run_log.debug(
-                "We do not have is EMSVM-23E exist from command line. reading it now"
-            )
+            self.run_log.debug("We do not have is EMSVM-23E exist from command line. reading it now")
             self.IS_EMSVM_23E_EXIST = self.__is_ESMVM23E_EXIST()
 
         if self.IS_EMSVM_23E_EXIST.lower() == "yes":
@@ -273,15 +259,12 @@ class apimgr_yml(object):
                 self.run_log.debug("EMSVM-23E password not provided via command line. Asking now...")
                 self.EMSVM23E_PASSWORD = self.__ask_EMSVM23E_PASSWORD()
 
-
         with open("credentials.properties", "w") as file:
             file.write(f"UTILITYBAREMETAL_PASSWORD={self.UTILITYBAREMETAL_PASSWORD}\n")
             file.write(f"IS_EMSVM_23E_EXIST={self.IS_EMSVM_23E_EXIST}\n")
             file.write(f"EMSVM23E_PASSWORD={self.EMSVM23E_PASSWORD}\n")
 
-        self.run_log.debug(
-            "We use UTILITY hostname to derivate names for Management. Safe option."
-        )
+        self.run_log.debug("We use UTILITY hostname to derivate names for Management. Safe option.")
         self.UTILITY_HOSTNAME = self.__get_UTILITY_HOSTNAME()
         # self.DNS_domain = self.__get_sys_domain()
         self.DNS_domain = self.container['CONTAINER_DOMAIN_NAME']
@@ -372,9 +355,7 @@ class apimgr_yml(object):
         # User wants to change campus interface we change or exit if cancel
         try:
             while True:
-                self.run_log.debug(
-                    "Going to ask the utlityBareMetal password"
-                )
+                self.run_log.debug("Going to ask the utilityBareMetal password")
                 UTILITYBAREMETAL_PASSWORD_user = input(
                     "Enter the IBM Storage Scale Utility Node password to configure passwordless SSH (default: cluster): "
                 )
@@ -386,21 +367,15 @@ class apimgr_yml(object):
             return UTILITYBAREMETAL_PASSWORD_user
         except KeyboardInterrupt:
             print("")
-            self.run_log.error(
-                "User cancelled\n"
-            )
-            self.run_log.debug(
-                "Going to terminate with RC 6"
-            )
+            self.run_log.error("User cancelled\n")
+            self.run_log.debug("Going to terminate with RC 6")
             sys.exit(6)
 
     def __is_ESMVM23E_EXIST(self):
         # User wants to change campus interface we change or exit if cancel
         try:
             while True:
-                self.run_log.debug(
-                    "Going to ask is EMSVM-23E exists"
-                )
+                self.run_log.debug("Going to ask is EMSVM-23E exists")
                 IS_EMSVM_23E_EXIST_user = input(
                     "Specify whether EMSVM-23E exists (default: no): "
                 )
@@ -412,21 +387,15 @@ class apimgr_yml(object):
             return IS_EMSVM_23E_EXIST_user
         except KeyboardInterrupt:
             print("")
-            self.run_log.error(
-                "User cancelled\n"
-            )
-            self.run_log.debug(
-                "Going to terminate with RC 6"
-            )
+            self.run_log.error("User cancelled\n")
+            self.run_log.debug("Going to terminate with RC 6")
             sys.exit(6)
 
     def __ask_EMSVM23E_PASSWORD(self):
-        # Ask EMSVm-23E password
+        # Ask EMSVM-23E password
         try:
             while True:
-                self.run_log.debug(
-                    "Going to ask the EMSVM-23E password"
-                )
+                self.run_log.debug("Going to ask the EMSVM-23E password")
                 EMSVM23E_PASSWORD_user = input(
                     "Enter the EMSVM-23E password to configure passwordless SSH (default: cluster): "
                 )
@@ -438,21 +407,15 @@ class apimgr_yml(object):
             return EMSVM23E_PASSWORD_user
         except KeyboardInterrupt:
             print("")
-            self.run_log.error(
-                "User cancelled\n"
-            )
-            self.run_log.debug(
-                "Going to terminate with RC 6"
-            )
+            self.run_log.error("User cancelled\n")
+            self.run_log.debug("Going to terminate with RC 6")
             sys.exit(6)
 
     def __ask_CAMPUS_INTERFACE(self):
         # User wants to change campus interface we change or exit if cancel
         try:
             while True:
-                self.run_log.debug(
-                    "Going to ask the user for a Campus interface name"
-                )
+                self.run_log.debug("Going to ask the user for a Campus interface name")
                 CAMPUS_INTERFACE_user = input(
                     "Enter the campus interface name (default: campus): "
                 )
@@ -464,21 +427,15 @@ class apimgr_yml(object):
             return CAMPUS_INTERFACE_user
         except KeyboardInterrupt:
             print("")
-            self.run_log.error(
-                "User cancelled Campus interface name input\n"
-            )
-            self.run_log.debug(
-                "Going to terminate with RC 6"
-            )
+            self.run_log.error("User cancelled Campus interface name input\n")
+            self.run_log.debug("Going to terminate with RC 6")
             sys.exit(6)
 
     def __ask_IMAGE_VERSION(self):
         # User wants to change hostname we change or exit if cancel
         try:
             while True:
-                self.run_log.debug(
-                    "Going to ask the user for a Image Version"
-                )
+                self.run_log.debug("Going to ask the user for a Image Version")
                 print(
                     f"\nSupported versions are: "
                     f"{', '.join(sorted(SUPPORTED_VERSIONS))}"
@@ -507,9 +464,7 @@ class apimgr_yml(object):
         # User wants to change API Port we change or exit if cancel
         try:
             while True:
-                self.run_log.debug(
-                    "Going to ask the user for a API Port number default 46443"
-                )
+                self.run_log.debug("Going to ask the user for a API Port number default 46443")
                 API_PORT_user = input(
                     "Enter the API port (default: 46443): "
                 )
@@ -524,12 +479,8 @@ class apimgr_yml(object):
             return API_PORT_user
         except KeyboardInterrupt:
             print("")
-            self.run_log.error(
-                "User cancelled API port input\n"
-            )
-            self.run_log.debug(
-                "Going to terminate with RC 6"
-            )
+            self.run_log.error("User cancelled API port input\n")
+            self.run_log.debug("Going to terminate with RC 6")
             sys.exit(6)
 
     def __write_YML_file(self):
@@ -990,29 +941,17 @@ class apimgr_yml(object):
         # Every start we check that not running already, if not running we delete the image
         contIsUp = self.__alreadyUP("api-official")
         if contIsUp:
-            self.run_log.error(
-                "We cannot start the API container as seems that is already UP."
-            )
-            self.run_log.debug(
-                "Going to exit with RC=9"
-            )
+            self.run_log.error("We cannot start the API container as seems that is already UP.")
+            self.run_log.debug("Going to exit with RC=9")
             sys.exit(9)
         else:
-            self.run_log.debug(
-                "Container is not UP, we will delete the image before start."
-            )
+            self.run_log.debug("Container is not UP, we will delete the image before start.")
             imgDeleted = self.__delete_image("api-official")
             if imgDeleted:
-                self.run_log.debug(
-                    "API image has been deleted, we continue."
-                )
+                self.run_log.debug("API image has been deleted, we continue.")
             else:
-                self.run_log.error(
-                    "Could not delete container image."
-                )
-                self.run_log.debug(
-                    "Going to exit with RC=10"
-                )
+                self.run_log.error("Could not delete container image.")
+                self.run_log.debug("Going to exit with RC=10")
                 sys.exit(10)
         # Users wants that we prep the container
         # This requires apimgr -i, apimgr -n
