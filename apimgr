@@ -94,12 +94,9 @@ def apimgr_EOL_warning():
         time.sleep(2)
         sys.exit(1)
     elif ALLOW_APIMGR == "1":
-        print(
-            "-- [WARNING] You should not run apimgr directly, use startAPIcont instead")
-        print(
-            "-- [WARNING] apimgr it is going to be depreciated in a future release")
-        print(
-            "-- [WARNING] Be aware that any error you encounter you need to reproduce running startAPIcont")
+        print("-- [WARNING] You should not run apimgr directly, use startAPIcont instead")
+        print("-- [WARNING] apimgr it is going to be depreciated in a future release")
+        print("-- [WARNING] Be aware that any error you encounter you need to reproduce running startAPIcont")
         time.sleep(5)
     else:
         print("-- [ERROR] You cannot run apimgr directly, use startAPIcont instead")
