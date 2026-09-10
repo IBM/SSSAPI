@@ -24,8 +24,6 @@ This is the **only script you need to run**. It auto-detects system settings, wr
 ./startAPIContainer [options]
 
 Options:
-  -r, --run                            Run (start) the SSS API Container.
-  -d, --delete                         Delete the SSS API container and its systemd service unit.
   -v, --verbose                        Display verbose messages in the console.
   -f, --file-name FILE                 Restore the container from a local tar file.
                                        (default: SSSAPI.tar)
