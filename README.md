@@ -24,15 +24,19 @@ This is the **only script you need to run**. It auto-detects system settings, wr
 ./startAPIContainer [options]
 
 Options:
+  -d, --delete                         Delete the SSS API container and its systemd service unit.
   -v, --verbose                        Display verbose messages in the console.
+
+  Install source (mutually exclusive):
   -f, --file-name FILE                 Restore the container from a local tar file.
                                        (default: SSSAPI.tar)
+  -vn, --image-version VER             API server image version to deploy.
+                                       (default: 7.0.2.0)
+
   -p, --port PORT                      Port on which the API server listens.
                                        (default: 46443)
   -i, --campus-interface IF            Name of the interface connected to the campus
                                        network. (default: campus)
-  -vn, --image-version VER             API server image version to deploy.
-                                       (default: 7.0.2.0)
   -up, --utilitybaremetal-password PW  Root password for the utilityBareMetal host.
                                        (default: cluster)
   -e, --is-emsvm23e-exist yes|no       Specify whether EMSVM-23E exists.
@@ -50,16 +54,19 @@ Options:
 ./startAPIContainer -f SSSAPI.tar
 
 # Start with custom port and utility host password
-./startAPIContainer -p 46443 -up mypassword
+./startAPIContainer -vn 7.0.2.0 -p 46443 -up mypassword
 
 # Override the image version
 ./startAPIContainer -vn 7.0.1.1
 
 # Start with EMSVM-23E present
-./startAPIContainer -e yes -ep emspassword
+./startAPIContainer -vn 7.0.2.0 -e yes -ep emspassword
 
 # Verbose output
 ./startAPIContainer -v
+
+# Delete the container
+./startAPIContainer -d
 ```
 
 ---
@@ -110,7 +117,7 @@ podman login cp.icr.io --username cp --password <API_Key>
 The API Server image is pulled from:
 
 ```
-preprod.icr.io/cp/scalesystem/sss_api
+preprod.icr.io/cp/scale-devops/scalesystem/sss_api
 ```
 
 ### SSL certificate
@@ -146,7 +153,7 @@ CONTAINER:
     API_PORT: 46443                    # HTTPS API port
     SSH_PORT: 20022                    # SSH port (development only)
 
-    IMAGE_NAME: preprod.icr.io/cp/scalesystem/sss_api
+    IMAGE_NAME: preprod.icr.io/cp/scale-devops/scalesystem/sss_api
     IMAGE_VERSION: 7.0.2.0
 
     LOG:    /home/apiadmin/log

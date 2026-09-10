@@ -10,7 +10,7 @@
 # -----------------------------------------------------------------------------
 #
 # File name: startAPIContainer
-# Description: It creates a sanitized rclmgr.yml based on input and system
+# Description: It creates a sanitized apimgr.yml based on input and system
 # -----------------------------------------------------------------------------
 #
 # Changelog:
@@ -29,6 +29,13 @@ ownFile = __file__
 def parse_arguments():
     parser = argparse.ArgumentParser()
 
+    parser.add_argument(
+        '-d',
+        '--delete',
+        action='store_true',
+        dest='delete',
+        help='Delete the SSS API container and its systemd service unit.',
+        default=False)
 
     parser.add_argument(
         '-v',
@@ -38,12 +45,25 @@ def parse_arguments():
         help='Display verbose messages in the console.',
         default=False)
 
-    parser.add_argument(
+    # Install source: mutually exclusive — local tar file vs repo version
+    install_source = parser.add_mutually_exclusive_group()
+
+    install_source.add_argument(
         '-f',
         '--file-name',
         action='store',
         dest='filename',
+        metavar='FILE',
         help='Restore from local container tar ball. (default: SSSAPI.tar)',
+        default=None)
+
+    install_source.add_argument(
+        '-vn',
+        '--image-version',
+        action='store',
+        dest='image_version',
+        metavar='VERSION',
+        help='API server version to deploy. (default: 7.0.1.0)',
         default=None)
 
     parser.add_argument(
@@ -61,15 +81,6 @@ def parse_arguments():
         dest='campus_interface',
         help='Name of the interface connected to the campus network. (default: campus)',
         default=None)
-
-    parser.add_argument(
-        '-vn',
-        '--image-version',
-        action='store',
-        dest='image_version',
-        help='API server version to deploy. (default: 7.0.1.0)',
-        default=None)
-
 
     parser.add_argument(
         '-up',
@@ -92,34 +103,47 @@ def parse_arguments():
         '--emsvm23e-password',
         action='store',
         dest='emsvm23e_password',
-        help=' Password for the root user on EMSVM-23E. (default: cluster)',
+        help='Password for the root user on EMSVM-23E. (default: cluster)',
         default="")
 
     args = parser.parse_args()
 
+    if args.delete:
+        start_only_args = [
+            ('-f/--file-name', args.filename),
+            ('-vn/--image-version', args.image_version),
+            ('-p/--port', args.port),
+            ('-i/--campus-interface', args.campus_interface),
+            ('-up/--utilitybaremetal-password', args.utilitybaremetal_password),
+            ('-e/--is-emsvm23e-exist', args.is_emsvm23e_exist),
+            ('-ep/--emsvm23e-password', args.emsvm23e_password if args.emsvm23e_password != "" else None),
+        ]
+        invalid_passed = [opt for opt, val in start_only_args if val is not None]
+        if invalid_passed:
+            parser.error(f"The following argument(s) cannot be used with -d/--delete: {', '.join(invalid_passed)}")
+
     return args.verbose, args.filename, \
         args.port, args.campus_interface, args.image_version, \
-        args.utilitybaremetal_password, args.is_emsvm23e_exist, args.emsvm23e_password
+        args.utilitybaremetal_password, args.is_emsvm23e_exist, args.emsvm23e_password, \
+        args.delete
 
 
 def copyLogs():
-    baseVarLogDirExists = os.path.isdir("/var/log/sssapi")
-    if baseVarLogDirExists:
-        startRCLcontVarLogExists = os.path.isdir("/var/log/sssapi/startAPIContainer")
-        if not startRCLcontVarLogExists:
-            os.mkdir("/var/log/sssapi/startAPIContainer")
-        logsExists = os.path.isdir("logs")
-        if not logsExists:
-            os.mkdir("logs")
-        for logFile in os.listdir("logs"):
-            srcLogFile = "logs/" + logFile
-            dstLogFile = "/var/log/sssapi/startAPIContainer/" + logFile
-            if os.path.isfile(srcLogFile):
-                shutil.copy(srcLogFile, dstLogFile)
+    if not os.path.isdir("/var/log/sssapi"):
+        return
+    dst_dir = "/var/log/sssapi/startAPIContainer"
+    if not os.path.isdir(dst_dir):
+        os.mkdir(dst_dir)
+    if not os.path.isdir("logs"):
+        os.mkdir("logs")
+    for logFile in os.listdir("logs"):
+        src = os.path.join("logs", logFile)
+        if os.path.isfile(src):
+            shutil.copy(src, os.path.join(dst_dir, logFile))
 
 
 def main():
-    verbose, filename, port, campus_interface, image_version, utilitybaremetal_password, is_emsvm23e_exist, emsvm23e_password = parse_arguments()
+    verbose, filename, port, campus_interface, image_version, utilitybaremetal_password, is_emsvm23e_exist, emsvm23e_password, delete = parse_arguments()
     our_yml = apimgr_yml(
         verbose,
         filename,
@@ -128,8 +152,14 @@ def main():
         image_version,
         utilitybaremetal_password,
         is_emsvm23e_exist,
-        emsvm23e_password
+        emsvm23e_password,
+        delete
     )
+
+    if delete:
+        our_yml.run_log.info("Going to delete the SSS API container.")
+        our_yml.delete_container()
+        sys.exit(0)
 
     if is_emsvm23e_exist is not None and (is_emsvm23e_exist.lower() != 'yes' and is_emsvm23e_exist.lower() != 'no'):
         our_yml.run_log.error(
@@ -144,53 +174,37 @@ def main():
     entries_NOK = our_yml.startAPIContainer()
     if entries_NOK:
         our_yml.run_log.error(
-            "The file has been written but does not " +
-            "pass the checks. You CANNOT continue with the next steps. " +
-            "Check the ERROR messages above to " +
-            "understand which tests failed and fix them. " +
-            "You can run this tool again, the data you entered will " +
-            "be shown as default entries."
+            "The file has been written but does not pass the checks. "
+            "You CANNOT continue with the next steps. "
+            "Check the ERROR messages above to understand which tests failed and fix them. "
+            "You can run this tool again, the data you entered will be shown as default entries."
         )
         sys.exit(1)
     else:
-        our_yml.run_log.debug(
-            "Could generate the needed information into YML, " +
-            "going to start the SSS API container"
-        )
-        our_yml.run_log.debug(
-            "Going to prepare the container"
-        )
+        our_yml.run_log.debug("Could generate the needed information into YML, going to start the SSS API container")
+        our_yml.run_log.debug("Going to prepare the container")
         canPrep = our_yml.prep_container()
-        our_yml.run_log.debug(
-            "back from prepare the container"
-        )
+        our_yml.run_log.debug("Back from prepare the container")
         if canPrep:
-
             could_start = our_yml.start_container()
             if could_start:
-                our_yml.run_log.info(
-                    "To start a new container again run the " +
-                    ownFile +
-                    " command."
-                )
+                our_yml.run_log.info(f"To start a new container, run the {ownFile} command.")
                 sys.exit(0)
-
             else:
-                our_yml.run_log.info(
-                    "They had been some issues on the run, " +
-                    "check the above messages and follow up with " +
-                    "using './startAPIContainer'. Thanks"
+                our_yml.run_log.error(
+                    "There have been some issues on the run. "
+                    "Check the above messages and follow up with './startAPIContainer'."
                 )
                 sys.exit(5)
         else:
-            our_yml.run_log.error(
-                "Could not prepare the container"
-            )
+            our_yml.run_log.error("Could not prepare the container")
             sys.exit(6)
 
 if __name__ == '__main__':
     try:
         main()
-        copyLogs()
+    except KeyboardInterrupt:
+        print("\nInterrupted by user.")
+        sys.exit(1)
     finally:
         copyLogs()

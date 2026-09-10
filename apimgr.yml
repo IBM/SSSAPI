@@ -44,7 +44,7 @@ CONTAINER:
     # Container image version detail
     # ------------------------------------------------------
     # Image Name
-    IMAGE_NAME: preprod.icr.io/cp/scalesystem/sss_api
+    IMAGE_NAME: preprod.icr.io/cp/scale-devops/scalesystem/sss_api
 
     # Image Version
     IMAGE_VERSION: 7.0.2.0
