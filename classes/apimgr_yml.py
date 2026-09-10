@@ -147,7 +147,8 @@ class apimgr_yml(object):
             image_version,
             utilitybaremetal_password,
             is_emsvm23e_exist,
-            emsvm23e_password
+            emsvm23e_password,
+            delete=False
             ):
         self.filename = "apimgr.yml"
         self.verbose = verbose
@@ -186,6 +187,9 @@ class apimgr_yml(object):
             sys.exit(13)
         else:
             self.run_log.debug(f"The file {self.filename} does have all the required entries.")
+
+        if delete:
+            return
 
         # Lets deal with CAMPUS if applicable
         if self.CAMPUS_INTERFACE is None:
@@ -1052,6 +1056,8 @@ class apimgr_yml(object):
         )
 
         try:
+            self.run_log.debug("Going to delete existing apimgr container and service")
+            apimgr.delete_container()
             self.run_log.debug("Going to run apimgr runcont")
             apimgr.run_container(input0, True)
         except BaseException:
@@ -1063,6 +1069,47 @@ class apimgr_yml(object):
             self.run_log.debug("Going to terminate with RC 24")
             sys.exit(24)
         self.run_log.debug("We are back from apimgr runcont normal mode")
+        return True
+
+    def delete_container(self):
+        """Delete the API container and its systemd service unit."""
+        try:
+            self.run_log.debug("Going to import apimgr")
+            import classes.apimgr as apimgr
+            self.run_log.debug("Imported apimgr")
+        except ImportError:
+            self.run_log.error("Cannot import apimgr")
+            self.run_log.debug("Going to terminate with RC 22")
+            sys.exit(22)
+        input0 = argparse.Namespace(
+            config_file='apimgr.yml',
+            force=False,
+            image_file_name=None,
+            install=False,
+            create_network=False,
+            network_name="ess_network",
+            run=False,
+            delete=True
+            )
+        self.run_log.debug("Going to readconf with apimgr")
+        try:
+            apimgr.readconf(input0)
+            self.run_log.debug("Success readconf with apimgr")
+        except BaseException:
+            self.run_log.error("Could not readconf with apimgr")
+            self.run_log.debug("Going to terminate with RC 23")
+            sys.exit(23)
+        try:
+            self.run_log.debug("Going to delete apimgr container and service")
+            apimgr.delete_container()
+            self.run_log.debug("Delete completed")
+        except BaseException:
+            self.run_log.error(
+                "The container delete returned a non zero exit. "
+                "Check the messages above."
+            )
+            self.run_log.debug("Going to terminate with RC 25")
+            sys.exit(25)
         return True
 
     def __podman_bin_exists(self):

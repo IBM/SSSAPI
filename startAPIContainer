@@ -29,6 +29,13 @@ ownFile = __file__
 def parse_arguments():
     parser = argparse.ArgumentParser()
 
+    parser.add_argument(
+        '-d',
+        '--delete',
+        action='store_true',
+        dest='delete',
+        help='Delete the SSS API container and its systemd service unit.',
+        default=False)
 
     parser.add_argument(
         '-v',
@@ -38,12 +45,25 @@ def parse_arguments():
         help='Display verbose messages in the console.',
         default=False)
 
-    parser.add_argument(
+    # Install source: mutually exclusive — local tar file vs repo version
+    install_source = parser.add_mutually_exclusive_group()
+
+    install_source.add_argument(
         '-f',
         '--file-name',
         action='store',
         dest='filename',
+        metavar='FILE',
         help='Restore from local container tar ball. (default: SSSAPI.tar)',
+        default=None)
+
+    install_source.add_argument(
+        '-vn',
+        '--image-version',
+        action='store',
+        dest='image_version',
+        metavar='VERSION',
+        help='API server version to deploy. (default: 7.0.1.0)',
         default=None)
 
     parser.add_argument(
@@ -61,15 +81,6 @@ def parse_arguments():
         dest='campus_interface',
         help='Name of the interface connected to the campus network. (default: campus)',
         default=None)
-
-    parser.add_argument(
-        '-vn',
-        '--image-version',
-        action='store',
-        dest='image_version',
-        help='API server version to deploy. (default: 7.0.1.0)',
-        default=None)
-
 
     parser.add_argument(
         '-up',
@@ -92,14 +103,32 @@ def parse_arguments():
         '--emsvm23e-password',
         action='store',
         dest='emsvm23e_password',
-        help=' Password for the root user on EMSVM-23E. (default: cluster)',
+        help='Password for the root user on EMSVM-23E. (default: cluster)',
         default="")
 
     args = parser.parse_args()
 
+    if not args.delete and args.filename is None and args.image_version is None:
+        parser.error("one of the arguments -f/--file-name or -vn/--image-version is required to start the container")
+
+    if args.delete:
+        start_only_args = [
+            ('-f/--file-name', args.filename),
+            ('-vn/--image-version', args.image_version),
+            ('-p/--port', args.port),
+            ('-i/--campus-interface', args.campus_interface),
+            ('-up/--utilitybaremetal-password', args.utilitybaremetal_password),
+            ('-e/--is-emsvm23e-exist', args.is_emsvm23e_exist),
+            ('-ep/--emsvm23e-password', args.emsvm23e_password if args.emsvm23e_password != "" else None),
+        ]
+        invalid_passed = [opt for opt, val in start_only_args if val is not None]
+        if invalid_passed:
+            parser.error(f"The following argument(s) cannot be used with -d/--delete: {', '.join(invalid_passed)}")
+
     return args.verbose, args.filename, \
         args.port, args.campus_interface, args.image_version, \
-        args.utilitybaremetal_password, args.is_emsvm23e_exist, args.emsvm23e_password
+        args.utilitybaremetal_password, args.is_emsvm23e_exist, args.emsvm23e_password, \
+        args.delete
 
 
 def copyLogs():
@@ -119,7 +148,7 @@ def copyLogs():
 
 
 def main():
-    verbose, filename, port, campus_interface, image_version, utilitybaremetal_password, is_emsvm23e_exist, emsvm23e_password = parse_arguments()
+    verbose, filename, port, campus_interface, image_version, utilitybaremetal_password, is_emsvm23e_exist, emsvm23e_password, delete = parse_arguments()
     our_yml = apimgr_yml(
         verbose,
         filename,
@@ -128,8 +157,14 @@ def main():
         image_version,
         utilitybaremetal_password,
         is_emsvm23e_exist,
-        emsvm23e_password
+        emsvm23e_password,
+        delete
     )
+
+    if delete:
+        our_yml.run_log.info("Going to delete the SSS API container.")
+        our_yml.delete_container()
+        sys.exit(0)
 
     if is_emsvm23e_exist is not None and (is_emsvm23e_exist.lower() != 'yes' and is_emsvm23e_exist.lower() != 'no'):
         our_yml.run_log.error(
