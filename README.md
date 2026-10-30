@@ -31,7 +31,7 @@ Options:
   -f, --file-name FILE                 Restore the container from a local tar file.
                                        (default: SSSAPI.tar)
   -vn, --image-version VER             API server image version to deploy.
-                                       (default: 7.0.2.0)
+                                       (default: 7.0.1.2)
 
   -p, --port PORT                      Port on which the API server listens.
                                        (default: 46443)
@@ -54,13 +54,13 @@ Options:
 ./startAPIContainer -f SSSAPI.tar
 
 # Start with custom port and utility host password
-./startAPIContainer -vn 7.0.2.0 -p 46443 -up mypassword
+./startAPIContainer -vn 7.0.1.2 -p 46443 -up mypassword
 
 # Override the image version
 ./startAPIContainer -vn 7.0.1.1
 
 # Start with EMSVM-23E present
-./startAPIContainer -vn 7.0.2.0 -e yes -ep emspassword
+./startAPIContainer -vn 7.0.1.2 -e yes -ep emspassword
 
 # Verbose output
 ./startAPIContainer -v
@@ -154,7 +154,7 @@ CONTAINER:
     SSH_PORT: 20022                    # SSH port (development only)
 
     IMAGE_NAME: cp.icr.io/cp/scalesystem/sss_api
-    IMAGE_VERSION: 7.0.2.0
+    IMAGE_VERSION: 7.0.1.2
 
     LOG:    /home/apiadmin/log
     BKUP:   /home/apiadmin/backup
